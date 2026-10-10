@@ -1,0 +1,167 @@
+* {
+    border: none;
+    border-radius: 0;
+    font-family: "JetBrainsMono Nerd Font", "Roboto", sans-serif;
+    font-size: 13px;
+    font-weight: bold;
+    min-height: 0;
+}
+
+window#waybar {
+    background: transparent;
+    color: #ffffff;
+}
+
+/* --- Left Group Bar Container --- */
+.modules-left {
+    background: rgba(60, 68, 79, 0.65);
+    border-radius: 14px;
+    padding: 2px 12px;
+    margin: 3px 0;
+}
+
+#custom-arch {
+    color: #ffffff;
+    font-size: 15px;
+    padding-right: 8px;
+}
+
+#hyprland-window {
+    color: #cdd6f4;
+    padding-right: 14px;
+}
+
+#disk {
+    color: #cdd6f4;
+    padding: 0 6px;
+}
+
+#cpu, #memory {
+    color: #cdd6f4;
+    padding: 0 4px;
+}
+
+#clock {
+    color: #ffffff;
+    padding-left: 14px;
+}
+
+#mpris {
+    color: #cdd6f4;
+    padding-left: 14px;
+}
+
+/* --- Center Workspaces (Dots) --- */
+#workspaces {
+    background: transparent;
+    transition: all 0.3s ease-in-out;
+    min-height: 0px;
+}
+
+#workspaces button {
+    color: transparent;
+    background: linear-gradient(90deg, rgba(128, 128, 128, 1) 0%, rgba(30, 30, 30, 1) 100%);
+    transition: all 0.3s ease-in-out;
+    font-size: 0;
+    min-height: 0px;
+    min-width: 25px;
+    padding: 0;
+    margin-left: 4px;
+    margin-right: 4px;
+    border-radius: 9999px;
+    border: none;
+    box-shadow: none;
+    margin-top: 8px;
+    margin-bottom: 8px;
+}
+
+#workspaces button.active {
+    background: linear-gradient(90deg, rgba(64, 137, 255, 1) 0%, rgba(162, 119, 255, 1) 100%);
+    color: transparent;
+    transition: all 0.3s ease-in-out;
+    font-size: 0;
+    min-height: 0px;
+    border-radius: 9999px;
+    min-width: 100px;
+}
+
+#workspaces button:hover {
+    background: linear-gradient(90deg, rgba(162, 119, 255, 1) 0%, rgba(64, 137, 255, 1) 100%);
+    color: transparent;
+    font-size: 0;
+    min-height: 0px;
+    border-radius: 9999px;
+    background-size: 400% 400%;
+    transition: all 0.3s ease-in-out;
+}
+
+#workspaces button.urgent {
+    background: linear-gradient(90deg, rgba(255, 77, 77, 1) 0%, rgba(255, 165, 0, 1) 100%);
+    color: transparent;
+    font-size: 0;
+    min-height: 0px;
+    border-radius: 9999px;
+    background-size: 400% 400%;
+    transition: all 0.3s ease-in-out;
+}
+
+/* --- Right Modules --- */
+.modules-right {
+    background-color: rgba(30, 30, 46, 0.60);
+    color: #cdd6f4;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 2px 12px;
+    margin: 3px 2px;
+    transition: background-color 0.25s ease, border-color 0.25s ease;
+}
+
+/* --- Spacing inside the Pills --- */
+#pulseaudio,
+#backlight,
+#battery,
+#temperature {
+    padding: 0 6px;
+}
+
+#tray {
+    padding-left: 2px;
+    padding-right: 2px;
+}
+
+#network {
+    padding-left: 2px;
+    padding-right: 4px;
+}
+
+/* --- Notification Module --- */
+#custom-notification {
+    color: #cdd6f4;
+    padding: 0 6px;
+}
+
+#custom-notification.notification {
+    color: #f38ba8;
+}
+
+#custom-notification.dnd {
+    color: #6c7086;
+}
+
+/* --- Tooltips --- */
+tooltip {
+    background: rgba(24, 24, 37, 0.55);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 12px;
+}
+
+tooltip * {
+    background: transparent;
+    border-radius: 12px;
+}
+
+tooltip label {
+    color: #cdd6f4;
+    padding: 4px 4px;
+}
+
