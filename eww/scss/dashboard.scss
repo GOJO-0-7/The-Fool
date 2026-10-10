@@ -1,0 +1,514 @@
+$bg-base: #1e1e2e;
+$bg-surface: #181825;
+$bg-card: #28283d;
+$bg-hover: #313244;
+
+$accent-primary: #cba6f7; // Mauve
+$accent-green: #a6e3a1;   // RAM / Status / Badges
+$accent-peach: #fab387;   // CPU / Accents
+$accent-blue: #89b4fa;    // Battery / Bluetooth
+$accent-red: #f38ba8;     // Temperature / Power
+$accent-yellow: #f9e2af;  // Brightness / Weather
+
+$text-main: #cdd6f4;
+$text-sub: #a6adc8;
+$border-subtle: rgba(255, 255, 255, 0.08);
+
+.db-scope {
+  background-color: $bg-base;
+  border-radius: 24px;
+  color: $text-main;
+  font-family: "JetBrainsMono Nerd Font", "JetBrainsMono NFM", "Material Design Icons", "Inter", sans-serif;
+  border: 1px solid $border-subtle;
+
+  /* Compact Mode Bar */
+  &.db-compact {
+    padding: 4px 12px;
+    border-radius: 20px;
+    background-color: $bg-surface;
+    min-width: 140px;
+
+    .icon.wifi {
+      font-size: 14px;
+      color: $accent-primary;
+    }
+    .icon.bat {
+      font-size: 14px;
+      color: $accent-blue;
+    }
+     
+    .compact-stat {
+      font-size: 11px;
+      font-weight: bold;
+      color: $text-sub;
+    }
+    &.divider {
+      color: rgba(255, 255, 255, 0.2);
+    }
+  }
+
+  /* Expanded Mode Box */
+  &.db-expanded {
+    padding: 16px;
+    min-width: 370px;
+    border-radius: 24px;
+  }
+
+  /* Header Section */
+  .db-header {
+    padding-bottom: 4px;
+  }
+
+  .db-distro-icon {
+    font-size: 16px;
+    color: $accent-primary;
+  }
+
+  .db-uptime-txt {
+    font-size: 12px;
+    font-weight: bold;
+    color: $text-main;
+  }
+
+  .db-window-title {
+    font-size: 10px;
+    color: $text-sub;
+    margin-top: 2px;
+  }
+
+  .db-action-btn {
+    background-color: $bg-card;
+    border-radius: 50%;
+    min-width: 32px;
+    min-height: 32px;
+    font-size: 13px;
+    color: $text-main;
+    transition: background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1), color 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+
+    &:hover {
+      background-color: $bg-hover;
+      color: $accent-primary;
+    }
+
+    &.power:hover {
+      background-color: rgba(243, 139, 168, 0.2);
+      color: $accent-red;
+    }
+  }
+
+  /* Integrated System Monitor Row */
+  .db-sys-stats-row {
+    background-color: $bg-surface;
+    border-radius: 16px;
+    padding: 6px;
+
+    .db-stat-pill {
+      background: transparent;
+      border: none;
+      padding: 4px 6px;
+      border-radius: 10px;
+      transition: background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+
+      &:hover {
+        background-color: $bg-card;
+      }
+
+      .stat-icon {
+        font-size: 13px;
+        &.ram  { color: $accent-peach; }
+        &.cpu  { color: $accent-green; }
+        &.bat  { color: $accent-blue; }
+        &.temp { color: $accent-red; }
+      }
+
+      .stat-val {
+        font-size: 11px;
+        font-weight: bold;
+        color: $text-main;
+      }
+    }
+  }
+
+  /* Quick Toggle Pills */
+  .db-pill-btn {
+    background-color: $bg-card;
+    border-radius: 18px;
+    padding: 8px 10px;
+    border: 1px solid transparent;
+    transition: background-color 0.25s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+
+    .db-pill-icon {
+      font-size: 15px;
+      color: $accent-primary;
+    }
+
+    .db-pill-title {
+      font-size: 11px;
+      font-weight: bold;
+      color: $text-main;
+    }
+
+    .db-pill-sub {
+      font-size: 9px;
+      color: $text-sub;
+    }
+
+    &.active {
+      background-color: $accent-primary;
+
+      .db-pill-icon,
+      .db-pill-title {
+        color: #11111b;
+      }
+      .db-pill-sub {
+        color: #313244;
+      }
+    }
+
+    /* Notun Power Mode Colors */
+    &.power-power-saver {
+      background-color: rgba(166, 227, 161, 0.15); /* Greenish background */
+      border-color: $accent-green;
+      .db-pill-icon, .db-pill-title { color: $accent-green; }
+    }
+    
+    &.power-balanced {
+      background-color: rgba(137, 180, 250, 0.15); /* Blueish background */
+      border-color: $accent-blue;
+      .db-pill-icon, .db-pill-title { color: $accent-blue; }
+    }
+    
+    &.power-performance {
+      background-color: rgba(243, 139, 168, 0.15); /* Redish background */
+      border-color: $accent-red;
+      .db-pill-icon, .db-pill-title { color: $accent-red; }
+    }
+  }
+
+  /* Tab Bar */
+  .db-tabs-header {
+    border-bottom: 1px solid $border-subtle;
+    padding-bottom: 6px;
+  }
+
+  .db-tab-btn {
+    background-color: transparent;
+    padding: 6px 12px;
+    border-radius: 10px;
+    transition: background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+
+    .db-tab-icon,
+    .db-tab-txt {
+      font-size: 12px;
+      font-weight: bold;
+      color: $text-sub;
+    }
+
+    &.active {
+      background-color: rgba(203, 166, 247, 0.15);
+
+      .db-tab-icon,
+      .db-tab-txt {
+        color: $accent-primary;
+      }
+    }
+  }
+
+  /* Notifications Card Design */
+  .db-notif-card {
+    background-color: $bg-surface;
+    border-radius: 14px;
+    padding: 10px;
+    border: 1px solid $border-subtle;
+  }
+
+  .db-notif-app {
+    font-size: 11px;
+    font-weight: bold;
+    color: $accent-primary;
+  }
+
+  .db-notif-time {
+    font-size: 10px;
+    color: $text-sub;
+  }
+
+  .db-notif-title {
+    font-size: 12px;
+    font-weight: bold;
+    color: $text-main;
+  }
+
+  .db-notif-body {
+    font-size: 11px;
+    color: $text-sub;
+  }
+
+  /* Minimal Modern Watermark Empty State */
+  .db-notif-watermark {
+    padding: 40px 0;
+    opacity: 0.28;
+    transition: opacity 0.3s ease;
+
+    &:hover {
+      opacity: 0.45;
+    }
+
+    .wm-icon {
+      font-size: 52px;
+      color: $accent-primary;
+    }
+
+    .wm-text {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      color: $text-sub;
+    }
+  }
+
+  .db-notif-footer {
+    padding-top: 4px;
+  }
+
+  .db-notif-count {
+    font-size: 10px;
+    color: $text-sub;
+  }
+
+  .db-clear-btn {
+    background-color: $bg-card;
+    border-radius: 10px;
+    padding: 4px 10px;
+    font-size: 11px;
+    color: $accent-red;
+    transition: background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+
+    &:hover {
+      background-color: rgba(243, 139, 168, 0.2);
+    }
+  }
+
+  /* Weather & Sliders Card */
+  .db-weather-card,
+  .db-sliders-box {
+    background-color: $bg-surface;
+    border-radius: 16px;
+    padding: 12px;
+    border: 1px solid $border-subtle;
+  }
+
+  .db-weather-icon {
+    font-size: 28px;
+    color: $accent-yellow;
+  }
+
+  .db-weather-temp {
+    font-size: 16px;
+    font-weight: bold;
+    color: $text-main;
+  }
+
+  .db-weather-loc {
+    font-size: 11px;
+    font-weight: bold;
+    color: $accent-primary;
+  }
+
+  .db-weather-desc {
+    font-size: 10px;
+    color: $text-sub;
+  }
+
+  .db-weather-sub-details {
+    background-color: $bg-card;
+    border-radius: 10px;
+    padding: 6px;
+  }
+
+  .db-weather-sub-icon {
+    font-size: 12px;
+    color: $accent-primary;
+  }
+
+  .db-weather-sub-txt {
+    font-size: 10px;
+    color: $text-sub;
+  }
+
+  .db-slider-icon {
+    font-size: 14px;
+    &.vol { color: $accent-blue; }
+    &.bri { color: $accent-yellow; }
+  }
+
+  .db-slider-val {
+    font-size: 11px;
+    font-weight: bold;
+    color: $text-sub;
+  }
+
+  .db-slider trough {
+    background-color: $bg-card;
+    border-radius: 6px;
+    min-height: 6px;
+  }
+
+  .db-slider highlight {
+    background-color: $accent-primary;
+    border-radius: 6px;
+  }
+
+  /* Modern Subpages (Wi-Fi & Bluetooth) */
+  .db-subpage-header {
+    padding-bottom: 6px;
+    border-bottom: 1px solid $border-subtle;
+  }
+
+  .db-subpage-back-btn,
+  .db-subpage-refresh-btn {
+    background-color: $bg-card;
+    border-radius: 50%;
+    min-width: 32px;
+    min-height: 32px;
+    font-size: 13px;
+    color: $accent-primary;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+
+    &:hover {
+      background-color: $bg-hover;
+    }
+
+    &.active {
+      background-color: $accent-primary;
+      color: #11111b;
+    }
+  }
+
+  .db-subpage-toggle-btn {
+    background-color: $bg-card;
+    border-radius: 50%;
+    min-width: 30px;
+    min-height: 30px;
+    font-size: 11px;
+    padding-right: 3px;
+    padding: 4px 0px;
+    color: $accent-primary;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+
+    &:hover {
+      background-color: $bg-hover;
+    }
+
+    &.active {
+      background-color: $accent-primary;
+      color: #11111b;
+    }
+  }
+
+  .db-subpage-title {
+    font-size: 13px;
+    font-weight: bold;
+    color: $text-main;
+  }
+
+  .db-subpage-subtitle {
+    font-size: 10px;
+    color: $text-sub;
+  }
+
+  .db-subpage-section-title {
+    font-size: 11px;
+    font-weight: bold;
+    color: $accent-primary;
+    margin-top: 4px;
+  }
+
+  /* Active Card */
+  .db-subpage-active-card {
+    background-color: rgba(203, 166, 247, 0.12);
+    border: 1px solid $accent-primary;
+    border-radius: 16px;
+    padding: 10px 12px;
+
+    .db-subpage-active-icon {
+      font-size: 18px;
+      color: $accent-primary;
+    }
+
+    .db-subpage-active-name {
+      font-size: 12px;
+      font-weight: bold;
+      color: $text-main;
+    }
+
+    .db-subpage-active-sub {
+      font-size: 10px;
+      color: $text-sub;
+    }
+
+    .db-subpage-disconnect-btn {
+      background-color: rgba(243, 139, 168, 0.2);
+      color: $accent-red;
+      border-radius: 10px;
+      padding: 4px 10px;
+      font-size: 10px;
+      font-weight: bold;
+      transition: background-color 0.2s ease;
+
+      &:hover {
+        background-color: $accent-red;
+        color: #11111b;
+      }
+    }
+  }
+
+  /* Subpage List Items */
+  .db-subpage-item {
+    background-color: $bg-surface;
+    border-radius: 14px;
+    padding: 10px 12px;
+    border: 1px solid $border-subtle;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+
+    &:hover {
+      background-color: $bg-hover;
+      border-color: rgba(255, 255, 255, 0.15);
+    }
+
+    .db-subpage-item-icon {
+      font-size: 16px;
+      color: $accent-primary;
+    }
+
+    .db-subpage-item-title {
+      font-size: 12px;
+      font-weight: bold;
+      color: $text-main;
+    }
+
+    .db-subpage-item-sub {
+      font-size: 10px;
+      color: $text-sub;
+    }
+
+    .db-subpage-badge {
+      font-size: 10px;
+      font-weight: bold;
+      color: $text-sub;
+      background-color: $bg-card;
+      padding: 4px 8px;
+      border-radius: 8px;
+
+      &.active {
+        background-color: rgba(166, 227, 161, 0.2);
+        color: $accent-green;
+      }
+    }
+
+    &.active {
+      border-color: $accent-primary;
+      background-color: rgba(203, 166, 247, 0.08);
+    }
+  }
+}

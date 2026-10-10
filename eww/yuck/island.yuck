@@ -1,0 +1,584 @@
+(defvar island_expanded false)
+(defvar osd_active false)
+(defvar osd_icon "󰕾")
+(defvar osd_label "Volume")
+(defvar osd_value 50)
+(defvar osd_type "bar")
+
+(defvar notif_active false)
+(defvar notif_data "{}")
+
+;; Privacy, Workspace & System Fallback Variables
+(defvar mic_active false)
+(defvar rec_active false)
+(defvar ws_active false)
+(defvar ws_id "1")
+(defvar ws_title "Desktop")
+
+(defpoll music_info :interval "1s"
+  :initial "NO MEDIA PLAYING"
+  "scripts/music.sh")
+
+(defpoll music_status :interval "0.5s"
+  :initial "NO MEDIA PLAYING"
+  "playerctl status 2>/dev/null || echo 'NO MEDIA PLAYING'")
+
+(defpoll music_cover :interval "2s"
+  :initial ""
+  "scripts/music_cover.sh")
+
+(defpoll music_artist :interval "1s" 
+  :initial ""
+  "playerctl metadata xesam:artist 2>/dev/null || true")
+
+(defpoll weather_data :interval "15m"
+  :initial '{"location": "Rajshahi", "temp": "--°C", "desc": "Loading...", "feels": "--°C", "temp_min_max": "--°C / --°C", "humidity": "--%", "wind": "-- km/h", "wind_dir": "", "wind_arrow": "󰈐", "uv_index": "0", "icon": "󰖙", "uv_current": "0", "uv_risk": "Low", "uv_icon": "󰛨", "uv_max": "0", "uv_clear_sky_max": "0", "precip_prob": "0%", "precip_daily": "0 mm", "current_rain": "0 mm", "cloud_cover": "0%", "wind_gusts": "0 km/h", "wind_dir_deg": "0°", "pressure": "-- hPa", "visibility": "-- km", "sunrise": "--:--", "sunset": "--:--"}'
+  "python3 scripts/weather.py")
+
+(defpoll battery_val :interval "5s"
+  :initial "100"
+  "cat /sys/class/power_supply/BAT*/capacity 2>/dev/null || echo '100'")
+
+(defpoll wifi_ssid :interval "5s"
+  :initial "Offline"
+  "nmcli -t -f active,ssid dev wifi | grep '^yes' | cut -d: -f2 2>/dev/null || echo 'Offline'")
+
+(defpoll dnd_active :interval "2s"
+  :initial "false"
+  "dunstctl is-paused 2>/dev/null || echo 'false'")
+
+
+;; ============================================================
+;; DYNAMIC ISLAND WIDGET
+;; ============================================================
+
+(defwidget dynamic_island []
+  (eventbox
+    :onhover "eww update island_expanded=true"
+    :onhoverlost "eww update island_expanded=false"
+
+    (box
+      :class "mi-root ${island_expanded || notif_active || osd_active || ws_active ? 'mi-expanded' : 'mi-compact'} ${music_status == 'Playing' ? 'mi-compact-playing' : (mic_active || rec_active) ? 'mi-compact-active' : ''}"
+      :orientation "v"
+      :space-evenly false
+      :halign "center"
+      :valign "center"
+
+      ;; ======================================================
+      ;; COMPACT PILL
+      ;; ======================================================
+      (revealer
+        :transition "none"
+        :duration "0ms"
+        :reveal {!island_expanded && !notif_active && !osd_active && !ws_active}
+        :visible {!island_expanded && !notif_active && !osd_active && !ws_active}
+
+        (eventbox
+          :onclick "eww update island_expanded=${!island_expanded}"
+          :onrightclick "playerctl play-pause"
+
+           (box
+            :class "mi-compact-content"
+            :orientation "h"
+            :space-evenly false
+            :spacing 8
+            :halign "center"
+            :valign "center"
+
+            (box
+              :orientation "h"
+              :space-evenly false
+              :spacing 10
+              :halign "center"
+              :valign "center"
+
+              (label
+                :class "mi-compact-icon"
+                :text {(music_status == "Playing" || music_status == "Paused") && music_info != "" && music_info != "NO MEDIA PLAYING"
+                        ? "󰎈"
+                        : (weather_data.desc != "" && weather_data.desc != "Loading...")
+                          ? "${weather_data.icon ?: '󰖙'}"
+                          : "󰍹"})
+
+              (label
+                :class "mi-compact-text"
+                :visible {(music_status == "Playing" || music_status == "Paused") && music_info != "" && music_info != "NO MEDIA PLAYING" || (weather_data.desc != "" && weather_data.desc != "Loading...")}
+                :text {(music_status == "Playing" || music_status == "Paused") && music_info != "" && music_info != "NO MEDIA PLAYING"
+                        ? music_info 
+                        : "${weather_data.location ?: 'Weather'}: ${weather_data.temp ?: '--°C'}, ${weather_data.desc ?: ''}"}
+                :limit-width 30)
+
+              (box
+                :class "mi-compact-fallback"
+                :orientation "h"
+                :space-evenly false
+                :spacing 10
+                :visible {(music_status != "Playing" && music_status != "Paused" || music_info == "" || music_info == "NO MEDIA PLAYING") && (weather_data.desc == "" || weather_data.desc == "Loading...")}
+
+                (box :orientation "h" :spacing 4 :space-evenly false
+                  (label :class "mi-fallback-icon" :text "󰁹")
+                  (label :class "mi-fallback-text" :text "${battery_val}%"))
+
+                (box :orientation "h" :spacing 4 :space-evenly false
+                  (label :class "mi-fallback-icon" :text "󰤨")
+                  (label :class "mi-fallback-text" :text wifi_ssid :limit-width 12))
+
+                (label :class "mi-fallback-icon mi-dnd-badge" :visible {dnd_active == "true"} :text "󰍦")
+              )
+            )
+
+            (box :orientation "h" :space-evenly false :spacing 8 :halign "end"
+              (revealer
+                :transition "slideleft"
+                :reveal {mic_active || rec_active}
+                :visible {mic_active || rec_active}
+                
+                (box :class "mi-privacy-box" :orientation "h" :space-evenly false :spacing 4 :valign "center"
+                  (label :class "mi-mic-dot" :text "󰍬" :visible {mic_active})
+                  (label :class "mi-rec-dot" :text "󰑋" :visible {rec_active})
+                )
+              )
+            )
+          )
+        )
+      )
+
+      ;; ======================================================
+      ;; NOTIFICATION CARD
+      ;; ======================================================
+      (revealer
+        :transition "slidedown"
+        :reveal {notif_active}
+        :visible {notif_active}
+        :duration "250ms"
+
+        (box
+          :class "mi-notification"
+          :orientation "v"
+          :space-evenly false
+          :spacing 4
+          :halign "center"
+          :valign "center"
+
+          (box
+            :class "mi-notification-header"
+            :orientation "h"
+            :space-evenly false
+            :spacing 8
+            :halign "fill"
+            :hexpand true
+
+            (label :class "mi-notification-icon" :text "󰂚")
+            (label :class "mi-notification-app" :text {notif_data.app != "" ? notif_data.app : "NOTIFICATION"} :hexpand true :halign "start")
+            (label :class "mi-notification-time" :text "NOW" :halign "end")
+          )
+
+          (label :class "mi-notification-summary" :text {notif_data.summary != "" ? notif_data.summary : ""} :limit-width 32 :wrap true :halign "start")
+          (label :class "mi-notification-body" :visible {notif_data.body != ""} :text {notif_data.body} :limit-width 45 :wrap true :halign "start")
+        )
+      )
+
+      ;; ======================================================
+      ;; WORKSPACE INDICATOR
+      ;; ======================================================
+      (revealer
+        :transition "slidedown"
+        :reveal {ws_active && !notif_active && !osd_active && !island_expanded}
+        :visible {ws_active && !notif_active && !osd_active && !island_expanded}
+        :duration "250ms"
+
+        (box
+          :class "mi-workspace-card"
+          :orientation "h"
+          :space-evenly false
+          :spacing 12
+          :halign "center"
+          :valign "center"
+
+          (label :class "mi-ws-id" :text ws_id)
+          
+          (box :orientation "v" :space-evenly false :valign "center"
+             (label :class "mi-ws-title-label" :text "WORKSPACE" :halign "start")
+             (label :class "mi-ws-title" :text ws_title :limit-width 20 :halign "start")
+          )
+        )
+      )
+
+      ;; ======================================================
+      ;; OSD (VOLUME / BRIGHTNESS)
+      ;; ======================================================
+      (revealer
+        :transition "slidedown"
+        :reveal {osd_active && !notif_active}
+        :visible {osd_active && !notif_active}
+        :duration "250ms"
+
+        (box
+          :class "mi-osd mi-osd-${osd_value == 0 || osd_label == 'Muted' ? 'mute' : matches(osd_label, '(?i)bright') ? 'brightness' : 'volume'}"
+          :orientation "h"
+          :space-evenly false
+          :spacing 12
+          :halign "center"
+          :valign "center"
+
+          (label
+            :class "mi-osd-icon"
+            :text {osd_value == 0 || osd_label == "Muted" ? "󰝟" : osd_icon})
+
+          (box
+            :orientation "v"
+            :space-evenly false
+            :spacing 5
+            :hexpand true
+            :valign "center"
+
+            (box
+              :orientation "h"
+              :space-evenly false
+              :halign "fill"
+              :hexpand true
+
+              (label :class "mi-osd-title" :text osd_label :halign "start" :hexpand true)
+              (label :class "mi-osd-value" :text {osd_value == 0 || osd_label == "Muted" ? "MUTED" : osd_type == "bar" ? "${osd_value}%" : osd_value} :halign "end")
+            )
+
+            (revealer
+              :transition "none"
+              :reveal {osd_type == "bar"}
+              :visible {osd_type == "bar"}
+
+              (progress
+                :class "mi-osd-progress"
+                :value {matches(osd_value, "^[0-9]+(\\.[0-9]+)?$") ? osd_value : 0}
+                :orientation "h")
+            )
+          )
+        )
+      )
+
+      ;; ======================================================
+      ;; EXPANDED CARD (MUSIC / ULTRA-MODERN WEATHER)
+      ;; ======================================================
+      (revealer
+        :transition "slidedown"
+        :reveal {island_expanded && !osd_active && !notif_active && !ws_active}
+        :visible {island_expanded && !osd_active && !notif_active && !ws_active}
+        :duration "250ms"
+
+        (box
+          :orientation "v"
+          :space-evenly false
+          :spacing 10
+
+          ;; 1. EXPANDED MUSIC CARD
+          (revealer
+            :transition "crossfade"
+            :reveal {(music_status == "Playing" || music_status == "Paused") && music_info != "" && music_info != "NO MEDIA PLAYING"}
+            :visible {(music_status == "Playing" || music_status == "Paused") && music_info != "" && music_info != "NO MEDIA PLAYING"}
+
+            (box
+              :class "mi-music-card"
+              :style {music_cover != ""
+                ? "background-image: linear-gradient(rgba(8,8,14,0.32), rgba(8,8,14,0.78)), url('${music_cover}'); background-size: cover; background-position: center;"
+                : "background-color: #14141d;"
+              }
+              :orientation "v"
+              :space-evenly false
+              :halign "center"
+              :valign "center"
+              :spacing 8
+
+              (box
+                :class "mi-music-header"
+                :orientation "h"
+                :space-evenly false
+                :halign "fill"
+                :hexpand true
+
+                (label :class "mi-music-header-title" :text "MEDIA PLAYER" :halign "start" :hexpand true)
+                (label :class "mi-music-header-status" :text {music_status == "Playing" ? "● PLAYING" : "⏸ PAUSED"} :halign "end")
+              )
+
+              (box
+                :class "mi-music-track"
+                :orientation "h"
+                :space-evenly false
+                :spacing 12
+                :halign "center"
+                :valign "center"
+
+                (box
+                  :class "mi-music-cover"
+                  :style {music_cover != "" ? "background-image: url('${music_cover}'); background-size: cover; background-position: center;" : ""}
+                  :halign "center"
+                  :valign "center")
+
+                (box
+                  :class "mi-music-info"
+                  :orientation "v"
+                  :space-evenly false
+                  :halign "start"
+                  :valign "center"
+
+                  (label :class "mi-music-title" :text {music_info != "" ? music_info : "No Media Playing"} :limit-width 24 :halign "start")
+                  (label :class "mi-music-subtitle" :text {music_artist != "" ? music_artist : "No Artist"} :halign "start")
+                )
+              )
+
+              (box
+                :class "mi-music-controls"
+                :orientation "h"
+                :space-evenly true
+                :halign "center"
+                :valign "center"
+
+                (button :class "mi-music-button" :onclick "playerctl previous" "󰒮")
+                (button :class "mi-music-play" :onclick "playerctl play-pause" {music_status == "Playing" ? "󰏤" : "󰐊"})
+                (button :class "mi-music-button" :onclick "playerctl next" "󰒭")
+              )
+            )
+          )
+
+          ;; 2. EXPANDED ULTRA-MODERN WEATHER CARD
+          (revealer
+            :transition "crossfade"
+            :reveal {music_status != "Playing" && music_status != "Paused" || music_info == "" || music_info == "NO MEDIA PLAYING"}
+            :visible {music_status != "Playing" && music_status != "Paused" || music_info == "" || music_info == "NO MEDIA PLAYING"}
+
+            (box
+              :class "mi-weather-card-modern"
+              :orientation "v"
+              :space-evenly false
+              :spacing 12
+
+              ;; Header: Location (Left) | Reload Button & Live Chip (Right)
+              (box
+                :class "mi-weather-topbar"
+                :orientation "h"
+                :space-evenly false
+                :halign "fill"
+                :hexpand true
+
+                (box
+                  :orientation "h"
+                  :spacing 6
+                  :space-evenly false
+                  :halign "start"
+                  :hexpand true
+                  (label :class "mi-weather-loc-icon" :text "󰍎")
+                  (label :class "mi-weather-location" :text {weather_data.location ?: "Rajshahi"} :limit-width 15)
+                )
+
+                (box
+                  :orientation "h"
+                  :spacing 8
+                  :space-evenly false
+                  :halign "end"
+                  :valign "center"
+
+                  ;; Reload Weather Button
+                  (button
+                    :class "mi-weather-reload-btn"
+                    :onclick "eww poll weather_data"
+                    :tooltip "Refresh Weather"
+                    "󰑐")
+
+                  ;; LIVE Chip Badge
+                  (box
+                    :class "mi-weather-live-chip"
+                    :orientation "h"
+                    :spacing 4
+                    :space-evenly false
+                    :valign "center"
+                    (label :class "mi-live-dot" :text "󰄯")
+                    (label :class "mi-live-text" :text "LIVE")
+                  )
+                )
+              )
+
+              ;; Hero Main Temperature Banner
+              (box
+                :class "mi-weather-hero-banner"
+                :orientation "h"
+                :space-evenly false
+                :spacing 25
+                :halign "fill"
+
+                (label :class "mi-hero-weather-icon" :text {weather_data.icon ?: "󰖙"})
+
+                (box
+                  :orientation "v"
+                  :space-evenly false
+                  :spacing 2
+                  :valign "center"
+                  :hexpand true
+
+                  (box
+                    :orientation "h"
+                    :space-evenly false
+                    :spacing 8
+                    :valign "baseline"
+                    (label :class "mi-hero-temp" :text {weather_data.temp ?: "--°C"})
+                    (label :class "mi-hero-condition" :text {weather_data.desc ?: "Clear"} :limit-width 18)
+                  )
+
+                  (box
+                    :orientation "h"
+                    :space-evenly false
+                    :spacing 10
+                    (label :class "mi-hero-feels" :text "Feels ${weather_data.feels ?: '--°C'}")
+                    (label :class "mi-hero-range" :text "󰔏 ${weather_data.temp_min_max ?: '--'}")
+                  )
+                )
+              )
+
+              ;; Highlighted UV Spotlight Pill Bar
+              (box
+                :class "mi-uv-hero-box"
+                :orientation "h"
+                :space-evenly false
+                :spacing 10
+                :halign "fill"
+
+                (box
+                  :class "mi-uv-pill"
+                  :orientation "h"
+                  :spacing 6
+                  :space-evenly false
+                  :valign "center"
+                  (label :class "mi-uv-icon-nf" :text "󰛨 ")
+                  (label :class "mi-uv-val" :text "UV ${weather_data.uv_current ?: '0'}")
+                  (label :class "mi-uv-risk-badge" :text "(${weather_data.uv_risk ?: 'Low'})")
+                )
+
+                (box
+                  :orientation "v"
+                  :space-evenly false
+                  :valign "center"
+                  :hexpand true
+                  (box
+                    :orientation "h"
+                    :space-evenly false
+                    :halign "fill"
+                    (label :class "mi-uv-stat-label" :text "Max UV  " :halign "start")
+                    (label :class "mi-uv-stat-val" :text "${weather_data.uv_max ?: '0'}" :halign "end")
+                  )
+                  (box
+                    :orientation "h"
+                    :space-evenly false
+                    :halign "fill"
+                    (label :class "mi-uv-stat-label" :text "Clear-Sky  " :halign "start")
+                    (label :class "mi-uv-stat-val" :text "${weather_data.uv_clear_sky_max ?: '0'}" :halign "end")
+                  )
+                )
+              )
+
+              ;; 2x2 Metric Grid Cards
+              (box
+                :class "mi-tile-grid"
+                :orientation "v"
+                :space-evenly false
+                :spacing 8
+
+                ;; Grid Row 1: Wind & Precipitation
+                (box
+                  :orientation "h"
+                  :space-evenly true
+                  :spacing 8
+
+                  ;; Wind Tile
+                  (box
+                    :class "mi-metric-tile"
+                    :orientation "v"
+                    :space-evenly false
+                    :spacing 4
+
+                    (box
+                      :orientation "h"
+                      :space-evenly false
+                      :halign "fill"
+                      (label :class "mi-tile-header-icon" :text "󰖝  ")
+                      (label :class "mi-tile-header-title" :text "WIND" :hexpand true :halign "start")
+                      (label :class "mi-tile-header-sub" :text {weather_data.wind_arrow ?: "⬇"})
+                    )
+                    (label :class "mi-tile-main-val" :text "${weather_data.wind ?: '0 km/h'} ${weather_data.wind_dir ?: ''}" :halign "start")
+                    (label :class "mi-tile-sub-val" :text "Gusts: ${weather_data.wind_gusts ?: '0 km/h'} • ${weather_data.wind_dir_deg ?: '0°'}" :halign "start")
+                  )
+
+                  ;; Precip Tile
+                  (box
+                    :class "mi-metric-tile"
+                    :orientation "v"
+                    :space-evenly false
+                    :spacing 4
+
+                    (box
+                      :orientation "h"
+                      :space-evenly false
+                      :halign "fill"
+                      (label :class "mi-tile-header-icon" :text "󰖕  ")
+                      (label :class "mi-tile-header-title" :text "PRECIP" :hexpand true :halign "start")
+                    )
+                    (label :class "mi-tile-main-val" :text "Prob: ${weather_data.precip_prob ?: '0%'}" :halign "start")
+                    (label :class "mi-tile-sub-val" :text "Rain: ${weather_data.current_rain ?: '0 mm'} • Daily: ${weather_data.precip_daily ?: '0 mm'}" :halign "start")
+                  )
+                )
+
+                ;; Grid Row 2: Atmosphere & Sun Cycle
+                (box
+                  :orientation "h"
+                  :space-evenly true
+                  :spacing 8
+
+                  ;; Atmosphere Tile
+                  (box
+                    :class "mi-metric-tile"
+                    :orientation "v"
+                    :space-evenly false
+                    :spacing 4
+
+                    (box
+                      :orientation "h"
+                      :space-evenly false
+                      :halign "fill"
+                      (label :class "mi-tile-header-icon" :text "󰖐  ")
+                      (label :class "mi-tile-header-title" :text "ATMOSPHERE" :hexpand true :halign "start")
+                    )
+                    (label :class "mi-tile-main-val" :text "Clouds: ${weather_data.cloud_cover ?: '0%'}" :halign "start")
+                    (label :class "mi-tile-sub-val" :text "Press: ${weather_data.pressure ?: '--'} • Vis: ${weather_data.visibility ?: '--'}" :halign "start")
+                  )
+
+                  ;; Sun Cycle Tile
+                  (box
+                    :class "mi-metric-tile"
+                    :orientation "v"
+                    :space-evenly false
+                    :spacing 4
+
+                    (box
+                      :orientation "h"
+                      :space-evenly false
+                      :halign "fill"
+                      (label :class "mi-tile-header-icon" :text "󰖜  ")
+                      (label :class "mi-tile-header-title" :text "SUN CYCLE" :hexpand true :halign "start")
+                    )
+                    (label :class "mi-tile-main-val" :text "Rise: ${weather_data.sunrise ?: '--:--'}" :halign "start")
+                    (label :class "mi-tile-sub-val" :text "Set: ${weather_data.sunset ?: '--:--'}" :halign "start")
+                  )
+                )
+              )
+            )
+          )
+        )
+      )
+    )
+  )
+)
+
+(defwindow island_window
+  :monitor 0
+  :geometry (geometry :x "0%" :y "0px" :width "0px" :height "0px" :anchor "bottom center")
+  :stacking "overlay"
+  :exclusive false
+  :namespace "dynamic-island-unique-bar"
+  (dynamic_island))

@@ -1,0 +1,547 @@
+/* ============================================================
+   EWW DYNAMIC ISLAND SCSS (FULL CODE WITH MODERN WEATHER)
+   PREFIX: mi-
+   ============================================================ */
+
+/* ------------------------------------------------------------
+   COLOR PALETTE & FONT VARIABLES
+   ------------------------------------------------------------ */
+$font-main: "JetBrainsMono Nerd Font", monospace;
+$font-workspace: "CaskadiyaCove Nerd Font", "Inter", "Outfit","JetBrainsMono Nerd Font";
+
+// Base Solid Colors
+$bg-compact: #090a0f;
+$bg-surface: #12141d;
+$bg-badge: #1a1d28;
+
+// Text Hierarchy
+$text-bright: #ffffff;
+$text-main: #e2e8f0;
+$text-muted: #94a3b8;
+$text-dim: #64748b;
+
+// Rich Modern Accents
+$accent-rose: #f43f5e;
+$accent-rose-hover: #fb7185;
+$accent-violet: #8b5cf6;
+$accent-cyan: #06b6d4;
+$accent-emerald: #10b981;
+$accent-amber: #f59e0b;
+$accent-sky: #38bdf8;
+
+// Solid Borders
+$border-subtle: #232736;
+$border-glow: #32384c;
+$border-divider: #282d3e;
+
+/* ROOT CONTAINER */
+.mi-root {
+  font-family: $font-main;
+  color: $text-main;
+  min-width: 0px;
+  min-height: 0px;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}
+
+/* COMPACT PILL (FLAT BOTTOM CORNERS) */
+.mi-compact {
+  min-width: 160px;
+  min-height: 26px;
+  padding: 1px 14px;
+  padding-top: 7px;
+  border-radius: 20px 20px 20px 20px;
+  background-color: $bg-compact;
+  border: 1px solid $border-subtle;
+  border-bottom: none; 
+  box-shadow: none;
+}
+
+/* COMPACT ACTIVE ACCENT BORDERS */
+.mi-compact-playing {
+  border-color: $accent-rose;
+  border-bottom: none;
+}
+
+.mi-compact-active {
+  border-color: $accent-amber;
+}
+
+.mi-compact-content {
+  min-width: 140px;
+  min-height: 20px;
+  background: transparent;
+}
+
+.mi-compact-icon {
+  font-size: 14px;
+  color: $accent-sky;
+  background: transparent;
+}
+
+.mi-compact-text {
+  font-size: 12px;
+  font-weight: bold;
+  color: $text-bright;
+  background: transparent;
+}
+
+/* SYSTEM FALLBACK BADGES */
+.mi-compact-fallback {
+  background: transparent;
+}
+
+.mi-fallback-icon {
+  font-size: 13px;
+  color: $accent-cyan;
+}
+
+.mi-fallback-text {
+  font-size: 11px;
+  font-weight: bold;
+  color: $text-main;
+}
+
+.mi-dnd-badge {
+  color: $accent-rose;
+}
+
+/* PRIVACY DOTS */
+.mi-privacy-box {
+  padding: 0px 4px;
+  background: transparent;
+}
+
+.mi-mic-dot {
+  color: $accent-amber;
+  font-size: 14px;
+  background: transparent;
+}
+
+.mi-rec-dot {
+  color: $accent-rose;
+  font-size: 14px;
+  background: transparent;
+}
+
+/* WORKSPACE INDICATOR */
+.mi-workspace-card {
+  min-width: 210px;
+  padding: 10px 16px;
+  border-radius: 22px;
+  background-color: $bg-surface;
+  border: 1px solid $border-subtle;
+  box-shadow: none;
+}
+
+.mi-ws-id {
+  font-family: $font-workspace;
+  font-size: 28px;
+  font-weight: 800;
+  font-style: normal;
+  color: $accent-sky;
+  padding-right: 14px;
+  border-right: 2px solid $border-divider;
+}
+
+.mi-ws-title-label {
+  font-size: 9px;
+  font-weight: bold;
+  color: $text-dim;
+}
+
+.mi-ws-title {
+  font-size: 13px;
+  font-weight: bold;
+  color: $text-bright;
+}
+
+/* EXPANDED ROOT */
+.mi-expanded {
+  min-width: 0px;
+  min-height: 0px;
+  padding: 0px;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}
+
+/* MUSIC CARD */
+.mi-music-card {
+  min-width: 352px;
+  min-height: 0px;
+  padding: 14px 18px;
+  border-radius: 26px;
+  background-color: $bg-surface;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
+  border: 1px solid $border-glow;
+  box-shadow: none;
+}
+
+.mi-music-header {
+  min-width: 316px;
+  min-height: 14px;
+  background: transparent;
+}
+
+.mi-music-header-title {
+  font-size: 10px;
+  font-weight: bold;
+  color: $text-dim;
+  background: transparent;
+}
+
+.mi-music-header-status {
+  font-size: 10px;
+  font-weight: bold;
+  color: $accent-emerald;
+  background: transparent;
+}
+
+.mi-music-track {
+  min-width: 316px;
+  min-height: 62px;
+  background: transparent;
+}
+
+.mi-music-cover {
+  min-width: 62px;
+  min-height: 62px;
+  border-radius: 16px;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
+  border: 1px solid $border-glow;
+  box-shadow: none;
+}
+
+.mi-music-info {
+  min-width: 0px;
+  background: transparent;
+}
+
+.mi-music-title {
+  font-size: 14px;
+  font-weight: bold;
+  color: $text-bright;
+  background: transparent;
+}
+
+.mi-music-subtitle {
+  font-size: 11px;
+  color: $text-muted;
+  background: transparent;
+  margin-top: 3px;
+}
+
+.mi-music-controls {
+  min-width: 260px;
+  min-height: 28px;
+  padding: 0px;
+  margin-top: 2px;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}
+
+.mi-music-button {
+  font-size: 18px;
+  color: $text-muted;
+  padding: 4px 18px;
+  margin: 0px;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  border-radius: 12px;
+}
+
+.mi-music-button:hover {
+  color: $text-bright;
+  background-color: #212534;
+}
+
+.mi-music-play {
+  font-size: 22px;
+  color: $accent-rose;
+  padding: 4px 18px;
+  margin: 0px;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  border-radius: 12px;
+}
+
+.mi-music-play:hover {
+  color: $accent-rose-hover;
+  background-color: #341a29;
+}
+
+/* OSD WIDGET & DYNAMIC ACCENTS */
+.mi-osd {
+  min-width: 240px;
+  padding: 12px 18px;
+  border-radius: 22px;
+  background-color: $bg-surface;
+  border: 1px solid $border-subtle;
+  box-shadow: none;
+}
+
+.mi-osd-icon {
+  font-size: 20px;
+  background: transparent;
+}
+
+.mi-osd-title {
+  font-size: 13px;
+  font-weight: bold;
+  color: $text-main;
+  background: transparent;
+}
+
+.mi-osd-value {
+  font-size: 13px;
+  font-weight: bold;
+  background: transparent;
+}
+
+/* OSD COLOR ACCENTS BY TYPE */
+.mi-osd-volume .mi-osd-icon { color: $accent-cyan; }
+.mi-osd-volume .mi-osd-value { color: $accent-cyan; }
+.mi-osd-volume progress { background-color: $accent-cyan; }
+
+.mi-osd-brightness .mi-osd-icon { color: $accent-amber; }
+.mi-osd-brightness .mi-osd-value { color: $accent-amber; }
+.mi-osd-brightness progress { background-color: $accent-amber; }
+
+.mi-osd-mute .mi-osd-icon { color: $accent-rose; }
+.mi-osd-mute .mi-osd-value { color: $accent-rose; }
+.mi-osd-mute progress { background-color: $accent-rose; }
+
+/* OSD PROGRESS BAR */
+.mi-osd-progress {
+  min-width: 150px;
+}
+
+.mi-osd-progress trough {
+  min-height: 6px;
+  border-radius: 10px;
+  background-color: #212534;
+  border: none;
+}
+
+.mi-osd-progress progress {
+  min-height: 6px;
+  border-radius: 10px;
+  border: none;
+}
+
+/* NOTIFICATION WIDGET */
+.mi-notification {
+  min-width: 280px;
+  padding: 14px 18px;
+  border-radius: 22px;
+  background-color: $bg-surface;
+  border: 1px solid $border-subtle;
+  box-shadow: none;
+}
+
+.mi-notification-header {
+  min-height: 16px;
+  background: transparent;
+}
+
+.mi-notification-icon {
+  font-size: 14px;
+  color: $accent-rose;
+  background: transparent;
+}
+
+.mi-notification-app {
+  font-size: 11px;
+  font-weight: bold;
+  color: $text-muted;
+  background: transparent;
+}
+
+.mi-notification-time {
+  font-size: 10px;
+  color: $text-dim;
+  background: transparent;
+}
+
+.mi-notification-summary {
+  font-size: 13px;
+  font-weight: bold;
+  color: $text-bright;
+  background: transparent;
+  margin-top: 4px;
+}
+
+.mi-notification-body {
+  font-size: 11px;
+  color: $text-muted;
+  background: transparent;
+  margin-top: 3px;
+}
+
+/* MODERN WEATHER CARD (NEW EXPANDED DESIGN) */
+.mi-weather-card-modern {
+  min-width: 352px;
+  padding: 16px 18px;
+  border-radius: 26px;
+  background-color: $bg-surface;
+  border: 1px solid $border-glow;
+  box-shadow: none;
+}
+
+.mi-weather-topbar {
+  min-height: 20px;
+}
+
+.mi-weather-loc-icon {
+  font-size: 14px;
+  color: $accent-sky;
+}
+
+.mi-weather-location {
+  font-size: 12px;
+  font-weight: bold;
+  color: $text-bright;
+}
+
+.mi-weather-live-chip {
+  background-color: rgba(16, 185, 129, 0.15);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  border-radius: 12px;
+  padding: 2px 8px;
+}
+
+.mi-live-dot {
+  font-size: 10px;
+  color: $accent-emerald;
+}
+
+.mi-live-text {
+  font-size: 9px;
+  font-weight: bold;
+  color: $accent-emerald;
+  letter-spacing: 1px;
+}
+
+/* HERO WEATHER BANNER */
+.mi-weather-hero-banner {
+  padding: 2px 0px;
+}
+
+.mi-hero-weather-icon {
+  font-size: 42px;
+  color: $accent-sky;
+}
+
+.mi-hero-temp {
+  font-size: 30px;
+  font-weight: 800;
+  color: $text-bright;
+}
+
+.mi-hero-condition {
+  font-size: 13px;
+  font-weight: bold;
+  color: $accent-sky;
+}
+
+.mi-hero-feels {
+  font-size: 11px;
+  color: $text-muted;
+}
+
+.mi-hero-range {
+  font-size: 11px;
+  color: $accent-rose;
+}
+
+/* UV SPOTLIGHT PILL BOX */
+.mi-uv-hero-box {
+  background-color: $bg-badge;
+  border: 1px solid $border-subtle;
+  border-radius: 16px;
+  padding: 8px 12px;
+}
+
+.mi-uv-pill {
+  background-color: rgba(245, 158, 11, 0.15);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  border-radius: 12px;
+  padding: 4px 10px;
+}
+
+.mi-uv-icon-nf {
+  font-size: 14px;
+  color: $accent-amber;
+}
+
+.mi-uv-val {
+  font-size: 12px;
+  font-weight: bold;
+  color: $accent-amber;
+}
+
+.mi-uv-risk-badge {
+  font-size: 11px;
+  font-weight: bold;
+  color: $text-bright;
+}
+
+.mi-uv-stat-label {
+  font-size: 10px;
+  color: $text-dim;
+}
+
+.mi-uv-stat-val {
+  font-size: 10px;
+  font-weight: bold;
+  color: $text-main;
+}
+
+/* 2x2 METRIC GRID TILES */
+.mi-tile-grid {
+  margin-top: 2px;
+}
+
+.mi-metric-tile {
+  background-color: $bg-badge;
+  border: 1px solid $border-subtle;
+  border-radius: 16px;
+  padding: 10px 12px;
+}
+
+.mi-tile-header-icon {
+  font-size: 14px;
+  color: $accent-cyan;
+}
+
+.mi-tile-header-title {
+  font-size: 10px;
+  font-weight: bold;
+  color: $text-dim;
+  letter-spacing: 0.5px;
+}
+
+.mi-tile-header-sub {
+  font-size: 13px;
+  color: $accent-sky;
+}
+
+.mi-tile-main-val {
+  font-size: 12px;
+  font-weight: bold;
+  color: $text-bright;
+}
+
+.mi-tile-sub-val {
+  font-size: 10px;
+  color: $text-muted;
+}

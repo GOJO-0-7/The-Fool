@@ -1,0 +1,258 @@
+
+/* Reset & Smooth Transition */
+.time-calendar-scope * {
+  all: unset;
+  font-family: "JetBrainsMono Nerd Font", monospace;
+}
+
+.time-calendar-scope {
+  background-color: #14141d;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #cdd6f4;
+  box-shadow: none;
+  transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+/* Compact Pill State */
+.tc-compact {
+  padding: 4px 12px;
+  min-width: 190px;
+  min-height: 24px;
+  border-radius: 40px;
+  background-color: #000000;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+
+  &.timer-active {
+    min-width: 280px;
+    border: 1px solid #a6e3a1;
+    box-shadow: none;
+  }
+}
+
+.time-calendar-scope .compact-container {
+  min-height: 20px;
+  
+  .clock-icon { font-size: 15px; color: #89b4fa; }
+  .time-text { font-size: 14px; font-weight: bold; color: #f5e0dc; }
+  .ampm-text { font-size: 12px; font-weight: bold; color: #cba6f7; }
+  .dot-sep { color: #585b70; font-size: 12px; }
+  .date-text { font-size: 13px; color: #bac2de; }
+}
+
+/* Compact Live Timer Badge */
+.compact-timer-badge {
+  .pill-timer-icon {
+    color: #a6e3a1;
+    font-size: 13px;
+  }
+  .pill-timer-text {
+    color: #a6e3a1;
+    font-weight: bold;
+    font-size: 13px;
+  }
+}
+
+/* Expanded State */
+.tc-expanded {
+  padding: 14px;
+  min-width: 280px;
+  border-radius: 24px;
+
+  &.timer-active {
+    border: 1px solid rgba(166, 227, 161, 0.5);
+  }
+}
+
+.time-calendar-scope .expanded-container {
+  min-width: 260px;
+}
+
+/* Live Header Clock */
+.tc-header {
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+
+  .tc-header-time {
+    font-size: 22px;
+    font-weight: bold;
+    color: #ffffff;
+  }
+
+  .tc-header-ampm {
+    font-size: 13px;
+    font-weight: bold;
+    color: #cba6f7;
+  }
+
+  .tc-header-date {
+    font-size: 11px;
+    color: #a6adc8;
+  }
+}
+
+/* Navigation Tabs */
+.tc-tabs {
+  background-color: rgba(255, 255, 255, 0.04);
+  padding: 3px;
+  border-radius: 12px;
+  margin-top: 2px;
+
+  .tc-tab-btn {
+    padding: 6px 0px;
+    font-size: 11px;
+    font-weight: bold;
+    color: #a6adc8;
+    border-radius: 9px;
+
+    &:hover {
+      color: #ffffff;
+      background-color: rgba(255, 255, 255, 0.06);
+    }
+
+    &.active {
+      background-color: #89b4fa;
+      color: #11111b;
+    }
+  }
+}
+
+/* Calendar Styling */
+.calendar-box {
+  padding-top: 4px;
+}
+
+.time-calendar-scope calendar.big-calendar {
+  background-color: transparent;
+  color: #cdd6f4;
+  font-size: 13px;
+  padding: 0px;
+
+  &:selected {
+    background-color: #f38ba8;
+    color: #11111b;
+    border-radius: 8px;
+    font-weight: bold;
+  }
+
+  header {
+    color: #cba6f7;
+    font-weight: bold;
+    padding-bottom: 6px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  button {
+    color: #89b4fa;
+    border-radius: 6px;
+    padding: 2px 4px;
+
+    &:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+      color: #f38ba8;
+    }
+  }
+
+  highlight {
+    color: #f9e2af;
+    font-weight: bold;
+  }
+}
+
+/* Compact & Spaced Button Group */
+.timer-box {
+  padding: 6px 0px 4px 0px;
+
+  .timer-display {
+    font-size: 32px;
+    font-weight: bold;
+    color: #f9e2af;
+    letter-spacing: 2px;
+  }
+
+  .timer-progress trough {
+    min-height: 5px;
+    border-radius: 6px;
+    background-color: #313244;
+  }
+
+  .timer-progress progress {
+    min-height: 5px;
+    border-radius: 6px;
+    background-color: #a6e3a1;
+  }
+
+  .timer-controls {
+    margin-top: 4px;
+
+    .timer-btn {
+      padding: 4px 0px;
+      min-height: 28px;
+      border-radius: 8px;
+      font-size: 11px;
+      font-weight: bold;
+      background-color: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: #cdd6f4;
+      transition: all 0.2s cubic-bezier(0.25, 1, 0.5, 1);
+
+      &:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+        border-color: rgba(255, 255, 255, 0.18);
+      }
+
+      /* Play / Pause Button */
+      &.play-btn {
+        background-color: #a6e3a1;
+        color: #11111b;
+        border: 1px solid #a6e3a1;
+        font-size: 12px;
+
+        &:hover {
+          background-color: #b5e8b0;
+          border-color: #b5e8b0;
+        }
+      }
+
+      /* Reset Button */
+      &.reset-btn {
+        background-color: rgba(243, 139, 168, 0.12);
+        color: #f38ba8;
+        border: 1px solid rgba(243, 139, 168, 0.25);
+
+        &:hover {
+          background-color: #f38ba8;
+          color: #11111b;
+          border-color: #f38ba8;
+        }
+      }
+
+      /* Quick Add Buttons */
+      &.add-btn {
+        font-size: 10px;
+        color: #89b4fa;
+        background-color: rgba(137, 180, 250, 0.08);
+        border: 1px solid rgba(137, 180, 250, 0.2);
+
+        &:hover {
+          background-color: rgba(137, 180, 250, 0.22);
+          border-color: rgba(137, 180, 250, 0.4);
+          color: #ffffff;
+        }
+      }
+
+      /* Quick Subtract Button */
+      &.sub-btn {
+        font-size: 10px;
+        color: #f9e2af;
+        background-color: rgba(249, 226, 175, 0.08);
+        border: 1px solid rgba(249, 226, 175, 0.2);
+
+        &:hover {
+          background-color: rgba(249, 226, 175, 0.22);
+          border-color: rgba(249, 226, 175, 0.4);
+          color: #ffffff;
+        }
+      }
+    }
+  }
+}

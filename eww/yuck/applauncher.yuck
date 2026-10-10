@@ -1,0 +1,85 @@
+;; App Launcher Data Fetcher
+(defpoll al_apps_data :interval "1h" :initial "[]" "python3 ~/.config/eww/scripts/applauncher_get_apps.py")
+(defvar al_hovered false)
+
+;; Dynamic Island App Launcher Widget
+(defwidget morph-applauncher []
+  (eventbox 
+    :onhover "eww update al_hovered=true"
+    :onhoverlost "eww update al_hovered=false"
+    (box 
+      :class "al-scope ${al_hovered ? 'al-expanded' : 'al-compact'}"
+      :orientation "v"
+      :space-evenly false
+      :halign "start"
+      
+      ;; Compact View (Arch Circle Icon)
+      (revealer 
+        :transition "slidedown"
+        :reveal {!al_hovered}
+        :visible {!al_hovered}
+        :duration "250ms"
+        (box 
+          :class "compact-container"
+          :orientation "h"
+          :space-evenly false
+          :halign "center"
+          :valign "center"
+          (label :class "icon" :text "󰣇")
+        )
+      )
+
+      ;; Expanded View (App List)
+      (revealer 
+        :transition "slidedown"
+        :reveal {al_hovered}
+        :visible {al_hovered}
+        :duration "300ms"
+        (box 
+          :class "expanded-container"
+          :orientation "v"
+          :space-evenly false
+
+          ;; Direct App List Scroll
+          (scroll 
+            :vscroll true 
+            :height 340 
+            :class "al-scroll"
+            (box 
+              :class "al-app-list"
+              :orientation "v"
+              :space-evenly false
+              :spacing 6
+              (for app in al_apps_data
+                (button 
+                  :class "al-item-btn"
+                  :onclick "python3 ~/.config/eww/scripts/applauncher_get_apps.py launch '${app.name}' '${app.exec}' & eww update al_hovered=false"
+                  (box 
+                    :orientation "h" 
+                    :space-evenly false 
+                    :spacing 14 
+                    :valign "center"
+                    (image :path "${app.icon}" :image-width 24 :image-height 24)
+                    (label :text "${app.name}" :class "al-item-label" :xalign 0)
+                  )
+                )
+              )
+            )
+          )
+        )
+      )
+    )
+  )
+)
+
+(defwindow applauncher_window
+  :monitor 0
+  :geometry (geometry :x "-25px" 
+                      :y "450px"
+                      :width "1px"
+                      :height "1px"
+                      :anchor "left center")
+  :stacking "fg"
+  :exclusive false
+  :wm-ignore true
+  (morph-applauncher))

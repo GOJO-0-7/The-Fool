@@ -1,0 +1,168 @@
+{
+    "$schema": "https://github.com/fastfetch-cli/fastfetch/raw/dev/doc/json_schema.json",
+    "logo": {
+        "source": "$HOME/.config/fastfetch/images/",
+        "type": "kitty",
+        "height": 26,
+        "padding": {
+            "top": 2,
+            "left": 4,
+            "right": 6
+        }
+    },
+    "display": {
+        "separator": "  "
+    },
+    "modules": [
+        "break",
+        {
+            "type": "custom",
+            "format": "\u001b[36m    コンピューター"
+        },
+        {
+            "type": "custom",
+            "format": "╔════════════════════════🟕═════════════════════════╗"
+        },
+        {
+            "type": "host",
+            "key": "╭─ 󰒋 PC      ",
+            "keyColor": "green"
+        },
+        {
+            "type": "cpu",
+            "key": "├─  CPU     ",
+            "keyColor": "green"
+        },
+        {
+            "type": "gpu",
+            "key": "├─ 󰢮 GPU     ",
+            "keyColor": "green"
+        },
+        {
+            "type": "memory",
+            "key": "├─  Memory  ",
+            "keyColor": "green"
+        },
+        {
+            "type": "disk",
+            "key": "├─ 󰋊 Disk    ",
+            "keyColor": "green"
+        },
+        {
+            "type": "display",
+            "key": "╰─  Display ",
+            "keyColor": "green"
+        },
+        {
+            "type": "custom",
+            "format": "╠════════════════════════🟕═════════════════════════╣"
+        },
+        {
+            "type": "os",
+            "key": "╭─  OS      ",
+            "keyColor": "blue"
+        },
+        {
+            "type": "kernel",
+            "key": "├─  Kernel  ",
+            "keyColor": "blue"
+        },
+        {
+            "type": "wm",
+            "key": "├─ 󰨇 WM      ",
+            "keyColor": "blue"
+        },
+        {
+            "type": "terminal",
+            "key": "├─  Term    ",
+            "keyColor": "blue"
+        },
+        {
+            "type": "packages",
+            "key": "├─ 󰏖 Package ",
+            "keyColor": "blue"
+        },
+        {
+            "type": "uptime",
+            "key": "├─  Uptime  ",
+            "keyColor": "blue"
+        },
+        {
+            "type": "command",
+            "key": "╰─ 󱎫 OS Age  ",
+            "keyColor": "blue",
+            "text": "birth_install=$(stat -c %W /); current=$(date +%s); echo $(((current-birth_install)/86400)) days"
+        },
+        {
+            "type": "command",
+            "key": "╭─  Anilist ",
+            "keyColor": "magenta",
+            "text": "a=$(/home/$USER/.config/fastfetch/tsukiyomi-fetch wrapper anilist --color magenta);echo -e $a"
+        },
+        {
+            "type": "command",
+            "key": "├─  MAL     ",
+            "keyColor": "magenta",
+            "text": "a=$(/home/$USER/.config/fastfetch/tsukiyomi-fetch wrapper myanimelist --color magenta);echo -e $a"
+        },
+        {
+            "type": "command",
+            "key": "├─ 󰊤 Github  ",
+            "keyColor": "magenta",
+            "text": "a=$(/home/$USER/.config/fastfetch/tsukiyomi-fetch wrapper github --color magenta);echo -e $a"
+        },
+        {
+            "type": "command",
+            "key": "├─  LeetCode",
+            "keyColor": "magenta",
+            "text": "a=$(/home/$USER/.config/fastfetch/tsukiyomi-fetch wrapper leetcode --color magenta);echo -e $a"
+        },
+        {
+            "type": "command",
+            "key": "├─ 󰄨 CForces ",
+            "keyColor": "magenta",
+            "text": "a=$(/home/$USER/.config/fastfetch/tsukiyomi-fetch wrapper codeforces --color magenta);echo -e $a"
+        },
+        {
+            "type": "command",
+            "key": "├─ 󰭼 Codechef",
+            "keyColor": "magenta",
+            "text": "a=$(/home/$USER/.config/fastfetch/tsukiyomi-fetch wrapper codechef --color magenta);echo -e $a"
+        },
+        {
+            "type": "command",
+            "key": "├─  Insta   ",
+            "keyColor": "magenta",
+            "text": "a=$(/home/$USER/.config/fastfetch/tsukiyomi-fetch wrapper instagram --color magenta);echo -e $a"
+        },
+        {
+            "type": "command",
+            "key": "├─  Twitter ",
+            "keyColor": "yellow",
+            "text": "a=$(/home/$USER/.config/fastfetch/tsukiyomi-fetch wrapper twitter --color yellow);echo -e $a"
+        },
+        {
+            "type": "command",
+            "key": "├─  Reddit  ",
+            "keyColor": "blue",
+            "text": "a=$(/home/$USER/.config/fastfetch/tsukiyomi-fetch wrapper reddit --color blue);echo -e $a"
+        },
+        {
+            "type": "command",
+            "key": "╰─ 󰄨 Simkl   ",
+            "keyColor": "red",
+            "text": "a=$(/home/$USER/.config/fastfetch/tsukiyomi-fetch wrapper simkl --color magenta);echo -e $a"
+        },
+        {
+            "type": "custom",
+            "format": "╚════════════════════════🟕═════════════════════════╝"
+        },
+        "break",
+        {
+            "type": "colors",
+            "paddingLeft": 2,
+            "symbol": "diamond"
+        },
+        "break"
+    ]
+}

@@ -1,0 +1,100 @@
+;; Dynamic Round Icons Poll
+(defpoll ram_icon :interval "2s" "./scripts/get_pie_icon.sh ram")
+(defpoll cpu_icon :interval "2s" "./scripts/get_pie_icon.sh cpu")
+(defpoll bat_icon :interval "3s" "./scripts/get_pie_icon.sh bat")
+(defpoll window_title_formatted :interval "1s" "python3 ~/.config/eww/scripts/get_window.py | tr -d '\\r\\n'")
+(defpoll battery_info :interval "2s" "scripts/battery.sh")
+
+;; Metric Percentages & Values Poll
+(defpoll bat_val :interval "3s"
+  "cat /sys/class/power_supply/BAT*/capacity 2>/dev/null | head -n1 || echo '100'")
+
+(defpoll temp_val :interval "2s"
+  "sensors 2>/dev/null | awk '/Package id 0:/ {print $4} /Tctl:/ {print $2} /Core 0:/ {print $3}' | tr -d '+°C' | cut -d. -f1 | head -n1 || echo '45'")
+
+;; Rich Detailed Tooltips Polls
+(defpoll ram_tooltip :interval "2s"
+  "free -h | awk '/Mem:/ {print \"RAM: \" $3 \" / \" $2}'")
+
+(defpoll cpu_tooltip :interval "2s"
+  "top -bn1 | grep '%Cpu' | awk '{print \"User: \" $2 \"% | Sys: \" $4 \"%\"}'")
+
+;; Battery Tooltip (Real-time Wattage Calculation)
+(defpoll bat_tooltip :interval "2s"
+  "scripts/battery.sh")
+
+(defpoll temp_tooltip :interval "3s"
+  "sensors 2>/dev/null | grep -E 'Package id 0|Core [0-9]|Tctl' | tr -d '+' | awk '{print $1\" \"$2\" \"$3}' | paste -sd ' | ' - || echo 'Temp: Normal'")
+
+;; Widget Definition (Name: status_bar)
+(defwidget status_bar []
+  (box :class "statusbar-container"
+       :orientation "h"
+       :space-evenly false
+       :halign "center"
+       :spacing 10
+
+    ;; 1. Active Window Title
+    (box :class "statusbar-item"
+         :space-evenly false
+         :spacing 6
+         :tooltip "Active: ${window_title_formatted}"
+      (label :class "statusbar-title"
+             :limit-width 18
+             :wrap false
+             :text window_title_formatted
+             :show-truncated true))
+
+    (label :class "statusbar-separator" :text "/")
+
+    ;; 2. RAM Usage
+    (button :class "statusbar-item-btn"
+            :onclick "foot -e btop &"
+            :tooltip ram_tooltip
+      (box :space-evenly false :spacing 6
+        (label :class "statusbar-icon ram" :text "${ram_icon}")
+        (label :class "statusbar-val" :text "${round(EWW_RAM.used_mem_perc, 0)}%")))
+
+    (label :class "statusbar-separator" :text "/")
+
+    ;; 3. CPU Usage
+    (button :class "statusbar-item-btn"
+            :onclick "foot -e btop &"
+            :tooltip cpu_tooltip
+      (box :space-evenly false :spacing 6
+        (label :class "statusbar-icon cpu" :text "${cpu_icon}")
+        (label :class "statusbar-val" :text "${round(EWW_CPU.avg, 0)}%")))
+
+    (label :class "statusbar-separator" :text "/")
+
+    ;; 4. Battery Percentage
+    (box :class "statusbar-item"
+         :space-evenly false
+         :spacing 6
+         :tooltip bat_tooltip
+      (label :class "statusbar-icon bat" :text "${bat_icon}")
+      (label :class "statusbar-val" :text "${bat_val}%"))
+
+    (label :class "statusbar-separator" :text "/")
+
+    ;; 5. Temperature
+    (box :class "statusbar-item"
+         :space-evenly false
+         :spacing 6
+         :tooltip temp_tooltip
+      (label :class "statusbar-icon temp" :text "󰔏")
+      (label :class "statusbar-val" :text "${temp_val}°C"))
+  ))
+
+;; Status Bar Window Definition
+(defwindow status_bar
+  :monitor 0
+  :geometry (geometry :x "0%"
+                      :y "4px"
+                      :width "520px" 
+                      :height "32px"
+                      :anchor "bottom left")
+  :stacking "fg"
+  :exclusive true
+  :focusable false
+  (status_bar))

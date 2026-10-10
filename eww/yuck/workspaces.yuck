@@ -1,0 +1,32 @@
+(deflisten workspaces_data :initial "[]" "python3 ~/.config/eww/scripts/workspaces.py")
+
+(defwidget workspaces []
+  (eventbox 
+    :onscroll "bash ~/.config/eww/scripts/change_workspace.sh {}"
+    (box 
+      :class "workspaces-container"
+      :orientation "h"
+      :space-evenly false
+      :spacing 6
+      (for ws in workspaces_data
+        (button 
+          :class "ws-btn ${ws.active ? 'active' : ws.occupied ? 'occupied' : 'empty'}"
+          :onclick "bash ~/.config/eww/scripts/change_workspace.sh ${ws.id}"
+          (label :text "${ws.active ? '󰮯' : ws.occupied ? '󰊠' : '󰧞'}")
+        )
+      )
+    )
+  )
+)
+
+(defwindow workspaces_window
+  :monitor 0
+  :geometry (geometry :x "20px" 
+                      :y "7px"
+                      :width "1px"
+                      :height "1px"
+                      :anchor "bottom right")
+  :stacking "fg"
+  :exclusive false
+  :wm-ignore true
+  (workspaces))

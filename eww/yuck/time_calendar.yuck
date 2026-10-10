@@ -1,0 +1,210 @@
+;; Calendar and Timer Expand State Variables
+(defvar show_calendar false)
+(defvar tc_tab "calendar") ;; "calendar" or "timer"
+
+;; Time, Date and Timer Polls
+(defpoll time_val :interval "1s" "date '+%I:%M'")
+(defpoll time_sec_val :interval "1s" "date '+%I:%M:%S'")
+(defpoll ampm_val :interval "1s" "date '+%p'")
+(defpoll date_val :interval "1h" "date '+%a, %d %b'")
+(defpoll full_date_val :interval "1h" "date '+%A, %B %d, %Y'")
+
+(defpoll calendar_day :interval "10h" "date '+%d'")
+(defpoll calendar_year :interval "10h" "date '+%Y'")
+
+(defpoll timer_data :interval "1s"
+  :initial '{"time": "05:00", "running": false, "remaining": 300, "progress": 0}'
+  "python3 scripts/timer.py status")
+
+;; Dynamic Island Time-Calendar Widget
+(defwidget time_calendar []
+  (eventbox 
+    :onhover "eww update show_calendar=true"
+    :onhoverlost "eww update show_calendar=false"
+    (box 
+      :class "time-calendar-scope ${show_calendar ? 'tc-expanded' : 'tc-compact'} ${timer_data.running ? 'timer-active' : ''}"
+      :orientation "v"
+      :space-evenly false
+      :halign "center"
+      
+      ;; Compact Time Pill View
+      (revealer 
+        :transition "crossfade"
+        :reveal {!show_calendar}
+        :visible {!show_calendar}
+        :duration "200ms"
+        (box 
+          :class "compact-container"
+          :orientation "h"
+          :space-evenly false
+          :spacing 8
+          :halign "center"
+          :valign "center"
+          (label :class "clock-icon" :text "󱑂")
+          (label :class "time-text" :text "${time_val}")
+          (label :class "ampm-text" :text "${ampm_val}")
+          (label :class "dot-sep" :text "•")
+          (label :class "date-text" :text "${date_val}")
+
+          ;; Compact Live Timer Badge (Shows when running)
+          (revealer
+            :transition "slideleft"
+            :reveal {timer_data.running}
+            :visible {timer_data.running}
+            :duration "200ms"
+            (box
+              :class "compact-timer-badge"
+              :orientation "h"
+              :space-evenly false
+              :spacing 5
+              (label :class "dot-sep" :text "•")
+              (label :class "pill-timer-icon" :text "󰔛")
+              (label :class "pill-timer-text" :text {timer_data.time})
+            )
+          )
+        )
+      )
+
+      ;; Expanded View
+      (revealer 
+        :transition "slidedown"
+        :reveal {show_calendar}
+        :visible {show_calendar}
+        :duration "250ms"
+        (box 
+          :class "expanded-container"
+          :orientation "v"
+          :space-evenly false
+          :spacing 10
+          :halign "fill"
+          :hexpand true
+
+          ;; Live Header (Digital Clock + Date)
+          (box 
+            :class "tc-header"
+            :orientation "v"
+            :space-evenly false
+            :halign "fill"
+            :hexpand true
+            :spacing 2
+            (box 
+              :orientation "h" 
+              :space-evenly false 
+              :spacing 6 
+              :halign "center"
+              (label :class "tc-header-time" :text "${time_sec_val}")
+              (label :class "tc-header-ampm" :text "${ampm_val}")
+            )
+            (label :class "tc-header-date" :text "${full_date_val}")
+          )
+
+          ;; Tab Navigation Switcher
+          (box 
+            :class "tc-tabs"
+            :orientation "h"
+            :space-evenly true
+            :halign "fill"
+            :hexpand true
+            (button 
+              :class "tc-tab-btn ${tc_tab == 'calendar' ? 'active' : ''}"
+              :onclick "eww update tc_tab='calendar'"
+              "󰸗 Calendar")
+            (button 
+              :class "tc-tab-btn ${tc_tab == 'timer' ? 'active' : ''}"
+              :onclick "eww update tc_tab='timer'"
+              "󰔛 Timer")
+          )
+
+          ;; Tab Content 1: Calendar
+          (revealer
+            :transition "crossfade"
+            :reveal {tc_tab == "calendar"}
+            :visible {tc_tab == "calendar"}
+            :duration "150ms"
+            (box 
+              :class "calendar-box"
+              :orientation "v"
+              :space-evenly false
+              :halign "fill"
+              :hexpand true
+              (calendar 
+                :class "big-calendar"
+                :day {calendar_day != "" ? calendar_day : 28}
+                :year {calendar_year != "" ? calendar_year : 2026})
+            )
+          )
+
+          ;; Tab Content 2: Timer
+          (revealer
+            :transition "crossfade"
+            :reveal {tc_tab == "timer"}
+            :visible {tc_tab == "timer"}
+            :duration "150ms"
+            (box 
+              :class "timer-box"
+              :orientation "v"
+              :space-evenly false
+              :spacing 12
+              :halign "fill"
+              :hexpand true
+
+              ;; Timer Readout
+              (label :class "timer-display" :text {timer_data.time})
+
+              ;; Timer Progress Bar
+              (progress 
+                :class "timer-progress" 
+                :value {timer_data.progress} 
+                :orientation "h"
+                :halign "fill"
+                :hexpand true)
+
+              ;; Timer Controls (Spaced out & Compact)
+              (box 
+                :class "timer-controls"
+                :orientation "h"
+                :space-evenly true
+                :spacing 6
+                :halign "fill"
+                :hexpand true
+                (button 
+                  :class "timer-btn sub-btn" 
+                  :onclick "python3 scripts/timer.py add -60" 
+                  "-1m")
+                (button 
+                  :class "timer-btn play-btn" 
+                  :onclick "python3 scripts/timer.py toggle" 
+                  {timer_data.running ? "󰏤" : "󰐊"})
+                (button 
+                  :class "timer-btn reset-btn" 
+                  :onclick "python3 scripts/timer.py reset" 
+                  "󰑐")
+                (button 
+                  :class "timer-btn add-btn" 
+                  :onclick "python3 scripts/timer.py add 60" 
+                  "+1m")
+                (button 
+                  :class "timer-btn add-btn" 
+                  :onclick "python3 scripts/timer.py add 300" 
+                  "+5m")
+              )
+            )
+          )
+        )
+      )
+    )
+  )
+)
+
+;; Dynamic Window Definition
+(defwindow time_calendar
+  :monitor 0
+  :geometry (geometry :x "230px"
+                      :y "5px"
+                      :width "1px"
+                      :height "1px"
+                      :anchor "bottom right")
+  :stacking "overlay"
+  :exclusive false
+  :focusable false
+  (time_calendar))

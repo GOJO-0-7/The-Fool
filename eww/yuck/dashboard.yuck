@@ -1,0 +1,481 @@
+;; =========================================
+;; POLLED & STREAMED VARIABLES
+;; =========================================
+(defpoll db_uptime :interval "1m" "bash ~/.config/eww/scripts/db_uptime.sh")
+(defpoll db_wifi :interval "3s" "bash ~/.config/eww/scripts/wifi_info.sh")
+(defpoll db_bt :interval "3s" "bash ~/.config/eww/scripts/bt_info.sh")
+(defpoll db_weather :interval "10m" 
+  :initial '{"temp":"--°C","feels":"--°C","desc":"Loading...","humidity":"--%","wind":"-- km/h","location":"--","icon":"🌤"}' 
+  "python3 ~/.config/eww/scripts/weather.py")
+(defpoll db_vol :interval "1s" "pamixer --get-volume 2>/dev/null || echo 50")
+(defpoll db_bright :interval "1s" "brightnessctl i -m 2>/dev/null | cut -d',' -f4 | tr -d '%' || echo 80")
+(defpoll db_profile :interval "2s" "bash ~/.config/eww/scripts/power_profile.sh")
+
+;; Safe JSON Polls
+(defpoll db_notifs :interval "2s" 
+  :initial "[]" 
+  "python3 ~/.config/eww/scripts/db_dashboard_notifs.py get 2>/dev/null || echo '[]'")
+
+;; Integrated System Metrics
+(defpoll window_title_formatted :interval "1s" "python3 ~/.config/eww/scripts/get_window.py | tr -d '\\r\\n'")
+(defpoll ram_icon :interval "2s" "./scripts/get_pie_icon.sh ram")
+(defpoll cpu_icon :interval "2s" "./scripts/get_pie_icon.sh cpu")
+(defpoll bat_icon :interval "3s" "./scripts/get_pie_icon.sh bat")
+(defpoll bat_val :interval "3s" "cat /sys/class/power_supply/BAT*/capacity 2>/dev/null | head -n1 || echo '100'")
+(defpoll temp_val :interval "2s" "sensors 2>/dev/null | awk '/Package id 0:/ {print $4} /Tctl:/ {print $2} /Core 0:/ {print $3}' | tr -d '+°C' | cut -d. -f1 | head -n1 || echo '45'")
+(defpoll ram_tooltip :interval "2s" "free -h | awk '/Mem:/ {print \"RAM: \" $3 \" / \" $2}'")
+(defpoll cpu_tooltip :interval "2s" "top -bn1 | grep '%Cpu' | awk '{print \"User: \" $2 \"% | Sys: \" $4 \"%\"}'")
+(defpoll bat_tooltip :interval "2s" "scripts/battery.sh")
+(defpoll temp_tooltip :interval "3s" "sensors 2>/dev/null | grep -E 'Package id 0|Core [0-9]|Tctl' | tr -d '+' | awk '{print $1\" \"$2\" \"$3}' | paste -sd ' | ' - || echo 'Temp: Normal'")
+
+;; Interactive State Variables
+(defvar db_expanded false)
+(defvar db_view "main") ;; Options: "main", "wifi", "bt"
+(defvar db_tab "notifs") ;; Options: "notifs", "tray"
+(defvar db_night_light false)
+(defvar db_dnd false)
+
+;; Network & Device Lists
+(defpoll db_wifi_list :interval "5s" 
+  :initial "[]" 
+  :run-while {db_expanded && db_view == "wifi"} 
+  "python3 ~/.config/eww/scripts/wifi_manager.py list 2>/dev/null || echo '[]'")
+
+(defpoll db_bt_list :interval "5s" 
+  :initial "[]" 
+  :run-while {db_expanded && db_view == "bt"} 
+  "python3 ~/.config/eww/scripts/bt_manager.py list 2>/dev/null || echo '[]'")
+
+
+;; =========================================
+;; DASHBOARD WIDGET
+;; =========================================
+(defwidget morph-dashboard []
+  (eventbox 
+    :onhover "eww update db_expanded=true"
+    :onhoverlost "eww update db_expanded=false db_view='main'"
+    (box 
+      :class "db-scope ${db_expanded ? 'db-expanded' : 'db-compact'}"
+      :orientation "v"
+      :space-evenly false
+      :halign "start"
+      
+      ;; --- COMPACT MODE ---
+      (revealer 
+        :transition "none"
+        :duration "0ms"
+        :reveal {!db_expanded}
+        :visible {!db_expanded}
+        (box 
+          :class "compact-container"
+          :orientation "h"
+          :space-evenly false
+          :halign "center"
+          :valign "center"
+          :spacing 8
+
+          ;; Wi-Fi Icon & Network Name
+          (label :class "icon wifi" 
+              :text {db_wifi.connected ? (db_wifi.icon != "" ? db_wifi.icon : "󰤨") : "󰤭"})
+          (label :class "compact-stat wifi-name" :text {db_wifi.ssid} :limit-width 12)
+
+          ;; Divider
+          (label :class "compact-stat divider" :text "|")
+
+          ;; Battery Icon & Percentage
+          (label :class "icon bat" :text bat_icon)
+          (label :class "compact-stat bat-val" :text "${bat_val}%")
+        )
+      )       
+        
+      ;; --- EXPANDED MODE ---
+      (revealer 
+        :transition "slidedown"
+        :reveal {db_expanded}
+        :visible {db_expanded}
+        :duration "300ms"
+        (box 
+          :class "expanded-container"
+          :orientation "v"
+          :space-evenly false
+
+          ;; VIEW 1: MAIN DASHBOARD
+          (revealer 
+            :transition "crossfade"
+            :reveal {db_view == "main"}
+            :visible {db_view == "main"}
+            :duration "200ms"
+            (box 
+              :orientation "v"
+              :space-evenly false
+              :spacing 12
+
+              ;; HEADER: Uptime, Title & System Control Buttons
+              (box :class "db-header" :orientation "h" :space-evenly false :valign "center"
+                (box :class "db-uptime-box" :orientation "v" :space-evenly false :hexpand true :valign "center"
+                  (box :orientation "h" :space-evenly false :spacing 6
+                    (label :class "db-distro-icon" :text "󰣇")
+                    (label :class "db-uptime-txt" :text "Up ${db_uptime}")
+                  )
+                  (label :class "db-window-title" :text window_title_formatted :limit-width 24 :xalign 0)
+                )
+                (box :class "db-power-actions" :orientation "h" :spacing 6 :space-evenly false
+                  (button :class "db-action-btn" :onclick "hyprpicker -a &" :tooltip "Color Picker" "󰏘")
+                  (button :class "db-action-btn" :onclick "quickshell -c ~/.config/quickshell/hyprquickpaper &" :tooltip "Wallpapers" "󰋩")
+                  (button :class "db-action-btn" :onclick "hyprlock &" :tooltip "Lock" "󰌾")
+                  (button :class "db-action-btn" :onclick "reboot" :tooltip "Reboot" "󰜉")
+                  (button :class "db-action-btn power" :onclick "poweroff" :tooltip "Shutdown" "󰐥")
+                )
+              )
+
+              ;; INTEGRATED SYSTEM MONITOR STRIP
+              (box :class "db-sys-stats-row" :orientation "h" :space-evenly true :spacing 6
+                (button :class "db-stat-pill" :onclick "foot -e btop &" :tooltip ram_tooltip
+                  (box :orientation "h" :space-evenly false :spacing 4 :halign "center"
+                    (label :class "stat-icon ram" :text ram_icon)
+                    (label :class "stat-val" :text "${round(EWW_RAM.used_mem_perc, 0)}%")
+                  )
+                )
+                (button :class "db-stat-pill" :onclick "foot -e btop &" :tooltip cpu_tooltip
+                  (box :orientation "h" :space-evenly false :spacing 4 :halign "center"
+                    (label :class "stat-icon cpu" :text cpu_icon)
+                    (label :class "stat-val" :text "${round(EWW_CPU.avg, 0)}%")
+                  )
+                )
+                (box :class "db-stat-pill" :tooltip bat_tooltip
+                  (box :orientation "h" :space-evenly false :spacing 4 :halign "center"
+                    (label :class "stat-icon bat" :text bat_icon)
+                    (label :class "stat-val" :text "${bat_val}%")
+                  )
+                )
+                (box :class "db-stat-pill" :tooltip temp_tooltip
+                  (box :orientation "h" :space-evenly false :spacing 4 :halign "center"
+                    (label :class "stat-icon temp" :text "󰔏")
+                    (label :class "stat-val" :text "${temp_val}°C")
+                  )
+                )
+              )
+
+              ;; QUICK TOGGLES GRID
+              (box :class "db-toggles-grid" :orientation "v" :space-evenly false :spacing 8
+                ;; Row 1: Wi-Fi & Bluetooth Controls
+                (box :orientation "h" :spacing 8 :space-evenly true
+                  (button :class {db_wifi.connected ? "db-pill-btn active" : "db-pill-btn"} 
+                          :onclick "nmcli radio wifi ${db_wifi.connected ? 'off' : 'on'}"
+                          :onrightclick "eww update db_view='wifi'"
+                    (box :orientation "h" :space-evenly false :spacing 8 :valign "center"
+                      (label :class "db-pill-icon" 
+                             :text {db_wifi.connected ? (db_wifi.icon != "" ? db_wifi.icon : "󰤨") : "󰤭"})                      
+                      (box :orientation "v" :space-evenly false :valign "center"
+                        (label :class "db-pill-title" :text "Internet ▾" :xalign 0)
+                        (label :class "db-pill-sub" :text {db_wifi.ssid} :limit-width 10 :xalign 0)
+                      )
+                    )
+                  )
+                  (button :class {db_bt.enabled ? "db-pill-btn active" : "db-pill-btn"} 
+                          :onclick "bluetoothctl power ${db_bt.enabled ? 'off' : 'on'}"
+                          :onrightclick "eww update db_view='bt'"
+                    (box :orientation "h" :space-evenly false :spacing 8 :valign "center"
+                      (label :class "db-pill-icon" :text {db_bt.icon})
+                      (box :orientation "v" :space-evenly false :valign "center"
+                        (label :class "db-pill-title" :text "Bluetooth ▾" :xalign 0)
+                        (label :class "db-pill-sub" :text {db_bt.status} :limit-width 10 :xalign 0)
+                      )
+                    )
+                  )
+                )
+
+                ;; Row 2: Night Light, DND, & Power Profile
+                (box :orientation "h" :spacing 6 :space-evenly true
+                  (button :class {db_night_light ? "db-pill-btn active" : "db-pill-btn"} 
+                          :onclick "pkill wlsunset || wlsunset -t 6000 & eww update db_night_light=${!db_night_light}"
+                    (box :orientation "h" :space-evenly false :spacing 6 :valign "center"
+                      (label :class "db-pill-icon" :text "󰌵")
+                      (box :orientation "v" :space-evenly false :valign "center"
+                        (label :class "db-pill-title" :text "Night Light" :xalign 0)
+                        (label :class "db-pill-sub" :text {db_night_light ? "Active" : "Off"} :xalign 0)
+                      )
+                    )
+                  )
+                  (button :class {db_dnd ? "db-pill-btn active" : "db-pill-btn"} 
+                          :onclick "dunstctl set-paused toggle || makoctl mode -t dnd & eww update db_dnd=${!db_dnd}"
+                    (box :orientation "h" :space-evenly false :spacing 6 :valign "center"
+                      (label :class "db-pill-icon" :text "󰂛")
+                      (box :orientation "v" :space-evenly false :valign "center"
+                        (label :class "db-pill-title" :text "DND" :xalign 0)
+                        (label :class "db-pill-sub" :text {db_dnd ? "Silent" : "Off"} :xalign 0)
+                      )
+                    )
+                  )
+                  (button :class "db-pill-btn power-${db_profile}" 
+                          :onclick "powerprofilesctl set ${db_profile == 'power-saver' ? 'balanced' : db_profile == 'balanced' ? 'performance' : 'power-saver'}"
+                    (box :orientation "h" :space-evenly false :spacing 6 :valign "center"
+                      (label :class "db-pill-icon" :text {db_profile == 'power-saver' ? "" : db_profile == 'balanced' ? "" : ""})
+                      (box :orientation "v" :space-evenly false :valign "center"
+                        (label :class "db-pill-title" :text "Power" :xalign 0)
+                        (label :class "db-pill-sub" :text db_profile :limit-width 12 :xalign 0)
+                      )
+                    )
+                  )
+                )
+              )
+
+              ;; TABS SWITCHER
+              (box :class "db-tabs-header" :orientation "h" :space-evenly true
+                (button :class {db_tab == "notifs" ? "db-tab-btn active" : "db-tab-btn"} 
+                        :onclick "eww update db_tab='notifs'"
+                  (box :orientation "h" :space-evenly false :spacing 6 :halign "center"
+                    (label :text "󰂚" :class "db-tab-icon")
+                    (label :text "Notifications" :class "db-tab-txt")
+                  )
+                )
+                (button :class {db_tab == "tray" ? "db-tab-btn active" : "db-tab-btn"} 
+                        :onclick "eww update db_tab='tray'"
+                  (box :orientation "h" :space-evenly false :spacing 6 :halign "center"
+                    (label :text "󰕾" :class "db-tab-icon")
+                    (label :text "Quick Controls" :class "db-tab-txt")
+                  )
+                )
+              )
+
+              ;; TAB CONTENTS CONTAINER
+              (box :class "db-tab-body" :orientation "v" :space-evenly false
+                
+                ;; TAB 1: NOTIFICATIONS
+                (revealer 
+                  :transition "crossfade"
+                  :reveal {db_tab == "notifs"}
+                  :visible {db_tab == "notifs"}
+                  :duration "200ms"
+                  (box :orientation "v" :space-evenly false :spacing 10
+                    (scroll :vscroll true :height 180 :class "db-notif-scroll"
+                      (box :orientation "v" :space-evenly false :spacing 8
+                        ;; Active Notifications List
+                        (revealer
+                          :transition "none"
+                          :reveal {arraylength(db_notifs) > 0}
+                          :visible {arraylength(db_notifs) > 0}
+                          (box :orientation "v" :space-evenly false :spacing 8
+                            (for n in db_notifs
+                              (box :class "db-notif-card" :orientation "v" :space-evenly false :spacing 4
+                                (box :orientation "h" :space-evenly false
+                                  (label :class "db-notif-app" :text {n.app} :xalign 0 :hexpand true)
+                                  (label :class "db-notif-time" :text {n.time})
+                                )
+                                (label :class "db-notif-title" :text {n.title} :xalign 0)
+                                (label :class "db-notif-body" :text {n.body} :xalign 0 :wrap true)
+                              )
+                            )
+                          )
+                        )
+
+                        ;; Minimal Modern Watermark Empty State
+                        (revealer
+                          :transition "none"
+                          :reveal {arraylength(db_notifs) == 0}
+                          :visible {arraylength(db_notifs) == 0}
+                          (box :class "db-notif-watermark" 
+                               :orientation "v" 
+                               :space-evenly false 
+                               :halign "center" 
+                               :valign "center" 
+                               :spacing 8
+                            (label :class "wm-icon" :text "󰂜")
+                            (label :class "wm-text" :text "NO NOTIFICATIONS")
+                          )
+                        )
+                      )
+                    )
+                    (box :class "db-notif-footer" :orientation "h" :space-evenly false :valign "center"
+                      (label :class "db-notif-count" :text "${arraylength(db_notifs)} notifications" :hexpand true :xalign 0)
+                      (button :class "db-clear-btn" :onclick "python3 ~/.config/eww/scripts/db_dashboard_notifs.py clear & eww update db_notifs='[]'" "󰎟 Clear")
+                    )
+                  )
+                )
+
+                ;; TAB 2: CONTROLS & WEATHER
+                (revealer 
+                  :transition "crossfade"
+                  :reveal {db_tab == "tray"}
+                  :visible {db_tab == "tray"}
+                  :duration "200ms"
+                  (box :orientation "v" :space-evenly false :spacing 12
+                    (box :class "db-weather-card" :orientation "v" :space-evenly false :spacing 12
+                      (box :orientation "h" :space-evenly false :spacing 20 :valign "center"
+                        (label :class "db-weather-icon" :text {db_weather.icon})
+                        (box :orientation "v" :space-evenly false :hexpand true
+                          (box :orientation "h" :space-evenly false
+                            (label :class "db-weather-temp" :text {db_weather.temp})
+                            (label :class "db-weather-loc" :text "  •  ${db_weather.location}" :hexpand true :xalign 0)
+                          )
+                          (label :class "db-weather-desc" :text "${db_weather.desc} (Feels ${db_weather.feels})" :xalign 0)
+                        )
+                      )
+                      (box :class "db-weather-sub-details" :orientation "h" :space-evenly true
+                        (box :orientation "h" :space-evenly false :spacing 6 :halign "center"
+                          (label :class "db-weather-sub-icon" :text "󰖎")
+                          (label :class "db-weather-sub-txt" :text {db_weather.humidity})
+                        )
+                        (box :orientation "h" :space-evenly false :spacing 6 :halign "center"
+                          (label :class "db-weather-sub-icon" :text "󰖝")
+                          (label :class "db-weather-sub-txt" :text {db_weather.wind})
+                        )
+                      )
+                    )
+
+                    (box :class "db-sliders-box" :orientation "v" :space-evenly false :spacing 8
+                      (box :orientation "h" :space-evenly false :spacing 8 :valign "center"
+                        (label :class "db-slider-icon vol" :text "󰕾")
+                        (scale :class "db-slider" :value db_vol :min 0 :max 100 :onchange "pamixer --set-volume {}" :hexpand true)
+                        (label :class "db-slider-val" :text "${db_vol}%")
+                      )
+                      (box :orientation "h" :space-evenly false :spacing 8 :valign "center"
+                        (label :class "db-slider-icon bri" :text "󰃠")
+                        (scale :class "db-slider" :value db_bright :min 10 :max 100 :onchange "brightnessctl set {}%" :hexpand true)
+                        (label :class "db-slider-val" :text "${db_bright}%")
+                      )
+                    )
+
+                  )
+                )
+
+              )
+            )
+          )
+
+          ;; VIEW 2: WI-FI FULL PAGE
+          (revealer 
+            :transition "crossfade"
+            :reveal {db_view == "wifi"}
+            :visible {db_view == "wifi"}
+            :duration "200ms"
+            (box 
+              :class "db-wf-full-page"
+              :orientation "v"
+              :space-evenly false
+              :spacing 12
+
+              ;; Subpage Header
+              (box :class "db-subpage-header" :orientation "h" :space-evenly false :valign "center" :spacing 10
+                (button :class "db-subpage-back-btn" :onclick "eww update db_view='main'" :tooltip "Back" "󰁍")
+                (box :orientation "v" :space-evenly false :hexpand true :valign "center"
+                  (label :class "db-subpage-title" :text "Wi-Fi Networks" :xalign 0)
+                  (label :class "db-subpage-subtitle" :text {db_wifi.connected ? "Connected to ${db_wifi.ssid}" : "Disconnected"} :xalign 0)
+                )
+                (button :class {db_wifi.connected ? "db-subpage-toggle-btn active" : "db-subpage-toggle-btn"}
+                        :onclick "nmcli radio wifi ${db_wifi.connected ? 'off' : 'on'}" 
+                        :tooltip "Toggle Wi-Fi" "󰤨")
+                (button :class "db-subpage-refresh-btn" 
+                        :onclick "eww update db_wifi_list='$(python3 ~/.config/eww/scripts/wifi_manager.py list || echo '[]')'" 
+                        :tooltip "Scan Networks" "󰑐")
+              )
+
+              ;; Active Network Card (If Connected)
+              (revealer
+                :transition "none"
+                :reveal {db_wifi.connected}
+                :visible {db_wifi.connected}
+                (box :class "db-subpage-active-card" :orientation "h" :space-evenly false :spacing 12 :valign "center"
+                  (label :class "db-subpage-active-icon" :text {db_wifi.icon != "" ? db_wifi.icon : "󰤨"})
+                  (box :orientation "v" :space-evenly false :hexpand true :valign "center"
+                    (label :class "db-subpage-active-name" :text {db_wifi.ssid} :xalign 0 :limit-width 20)
+                    (label :class "db-subpage-active-sub" :text "Currently Active Connection" :xalign 0)
+                  )
+                  (button :class "db-subpage-disconnect-btn" 
+                          :onclick "nmcli dev disconnect wlan0" "Disconnect")
+                )
+              )
+
+              (label :class "db-subpage-section-title" :text "Available Networks" :xalign 0)
+
+              ;; Scrollable Scanned List
+              (scroll :vscroll true :height 260 :class "db-subpage-scroll"
+                (box :orientation "v" :space-evenly false :spacing 8
+                  (for net in db_wifi_list
+                    (button :class {net.active ? "db-subpage-item active" : "db-subpage-item"}
+                            :onclick {net.active ? "nmcli dev disconnect wlan0" : "python3 ~/.config/eww/scripts/wifi_manager.py connect '${net.ssid}' &"}
+                      (box :orientation "h" :space-evenly false :spacing 12 :valign "center"
+                        (label :class "db-subpage-item-icon" :text {net.icon})
+                        (box :orientation "v" :space-evenly false :hexpand true :valign "center"
+                          (label :class "db-subpage-item-title" :text {net.ssid} :xalign 0 :limit-width 22)
+                          (label :class "db-subpage-item-sub" :text "${net.signal}%  •  ${net.security}" :xalign 0)
+                        )
+                        (label :class {net.active ? "db-subpage-badge active" : "db-subpage-badge"} 
+                               :text {net.active ? "Connected" : "Connect"})
+                      )
+                    )
+                  )
+                )
+              )
+            )
+          )
+
+          ;; VIEW 3: BLUETOOTH FULL PAGE
+          (revealer 
+            :transition "crossfade"
+            :reveal {db_view == "bt"}
+            :visible {db_view == "bt"}
+            :duration "200ms"
+            (box 
+              :class "db-bt-full-page"
+              :orientation "v"
+              :space-evenly false
+              :spacing 12
+
+              ;; Subpage Header
+              (box :class "db-subpage-header" :orientation "h" :space-evenly false :valign "center" :spacing 10
+                (button :class "db-subpage-back-btn" :onclick "eww update db_view='main'" :tooltip "Back" "󰁍")
+                (box :orientation "v" :space-evenly false :hexpand true :valign "center"
+                  (label :class "db-subpage-title" :text "Bluetooth Devices" :xalign 0)
+                  (label :class "db-subpage-subtitle" :text {db_bt.enabled ? db_bt.status : "Bluetooth Off"} :xalign 0)
+                )
+                (button :class {db_bt.enabled ? "db-subpage-toggle-btn active" : "db-subpage-toggle-btn"}
+                        :onclick "bluetoothctl power ${db_bt.enabled ? 'off' : 'on'}" 
+                        :tooltip "Toggle Power" "󰂯")
+                (button :class "db-subpage-refresh-btn" 
+                        :onclick "eww update db_bt_list='$(python3 ~/.config/eww/scripts/bt_manager.py list || echo '[]')'" 
+                        :tooltip "Scan Devices" "󰑐")
+              )
+
+              (label :class "db-subpage-section-title" :text "Discovered & Paired Devices" :xalign 0)
+
+              ;; Scrollable Scanned List
+              (scroll :vscroll true :height 310 :class "db-subpage-scroll"
+                (box :orientation "v" :space-evenly false :spacing 8
+                  (for dev in db_bt_list
+                    (button :class {dev.connected ? "db-subpage-item active" : "db-subpage-item"}
+                            :onclick {dev.connected ? "bluetoothctl disconnect ${dev.mac}" : "bluetoothctl connect ${dev.mac}"}
+                      (box :orientation "h" :space-evenly false :spacing 12 :valign "center"
+                        (label :class "db-subpage-item-icon" :text {dev.icon})
+                        (box :orientation "v" :space-evenly false :hexpand true :valign "center"
+                          (label :class "db-subpage-item-title" :text {dev.name} :xalign 0 :limit-width 22)
+                          (label :class "db-subpage-item-sub" :text {dev.mac} :xalign 0)
+                        )
+                        (label :class {dev.connected ? "db-subpage-badge active" : "db-subpage-badge"} 
+                               :text {dev.connected ? "Connected" : (dev.paired ? "Paired" : "Pair")})
+                      )
+                    )
+                  )
+                )
+              )
+            )
+          )
+
+        )
+      )
+    )
+  )
+)
+
+
+(defwindow dashboard_window
+  :monitor 0
+  :geometry (geometry :x "20px" 
+                      :y "5px"
+                      :width "1px"
+                      :height "1px"
+                      :anchor "bottom left")
+  :stacking "fg"
+  :exclusive false
+  :wm-ignore true
+  (morph-dashboard))
